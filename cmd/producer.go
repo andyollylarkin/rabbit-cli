@@ -2,7 +2,6 @@ package rmq
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -12,20 +11,15 @@ import (
 )
 
 type Producer struct {
-	Exchange     string
-	ExchangeType string
-	RoutingKey   string
-	Host         string
-	Port         string
-	Username     string
-	Password     string
+	Exchange   string
+	RoutingKey string
+	Host       string
+	Port       string
+	Username   string
+	Password   string
 }
 
 func (p Producer) Produce() error {
-	if p.Exchange != "" && p.ExchangeType == "" {
-		return errors.New("invalid exchange type")
-	}
-
 	dsn := "amqp://" + p.Username + ":" + p.Password + "@" + p.Host + ":" + p.Port + "/"
 	conn, err := amqp.Dial(dsn)
 
@@ -46,11 +40,6 @@ func (p Producer) Produce() error {
 
 	cl := make(chan *amqp.Error)
 	nc := ch.NotifyClose(cl)
-
-	err = ch.ExchangeDeclare(p.Exchange, p.ExchangeType, false, false, false, false, nil)
-	if err != nil {
-		return err
-	}
 
 	textout := produce()
 

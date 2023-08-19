@@ -55,13 +55,12 @@ func main() {
 		Short: "Run rabbitmq producer",
 		Run: func(cmd *cobra.Command, args []string) {
 			p := rmq.Producer{
-				Exchange:     cmd.Flag("exchange").Value.String(),
-				ExchangeType: cmd.Flag("exchange_type").Value.String(),
-				RoutingKey:   cmd.Flag("rk").Value.String(),
-				Host:         cmd.Flag("host").Value.String(),
-				Port:         cmd.Flag("port").Value.String(),
-				Username:     cmd.Flag("username").Value.String(),
-				Password:     cmd.Flag("password").Value.String(),
+				Exchange:   cmd.Flag("exchange").Value.String(),
+				RoutingKey: cmd.Flag("rk").Value.String(),
+				Host:       cmd.Flag("host").Value.String(),
+				Port:       cmd.Flag("port").Value.String(),
+				Username:   cmd.Flag("username").Value.String(),
+				Password:   cmd.Flag("password").Value.String(),
 			}
 
 			err := p.Produce()
@@ -73,7 +72,6 @@ func main() {
 	}
 	cmd.AddCommand(&cmdProducer)
 	cmdProducer.PersistentFlags().String("exchange", "", "exchange name")
-	cmdProducer.PersistentFlags().String("exchange_type", "", "exchange type")
 	cmdProducer.PersistentFlags().String("rk", "", "routing key")
 	cmdProducer.PersistentFlags().String("host", "127.0.0.1", "rabbitmq host addr")
 	cmdProducer.PersistentFlags().String("port", "5672", "rabbitmq port")
