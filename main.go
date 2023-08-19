@@ -9,25 +9,28 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var version string = "UNKNOWN"
+
 func main() {
 	cmd := cobra.Command{
 		Use: "rmqcli", Aliases: []string{"rcli"}, Short: "Run rabbitmq consumer/producer",
-		Example: "rmqcli consumer",
+		Example: "Usage: rmqcli {consumer|producer} {params}",
 		Run:     func(cmd *cobra.Command, args []string) { fmt.Println(cmd.Example); os.Exit(1) },
+		Version: version,
 	}
 	cmdConsumer := cobra.Command{
 		Use:   "consumer",
 		Short: "Run rabbitmq consumer",
 		Run: func(cmd *cobra.Command, args []string) {
 			c := rmq.Consumer{
-				Exchange:     cmd.Flag("e").Value.String(),
-				ExchangeType: cmd.Flag("et").Value.String(),
-				RoutingKey:   cmd.Flag("r").Value.String(),
-				Host:         cmd.Flag("h").Value.String(),
-				Port:         cmd.Flag("p").Value.String(),
-				Username:     cmd.Flag("U").Value.String(),
-				Password:     cmd.Flag("P").Value.String(),
-				Queue:        cmd.Flag("q").Value.String(),
+				Exchange:   cmd.Flag("exchange").Value.String(),
+				RoutingKey: cmd.Flag("rk").Value.String(),
+				Host:       cmd.Flag("host").Value.String(),
+				Port:       cmd.Flag("port").Value.String(),
+				Username:   cmd.Flag("username").Value.String(),
+				Password:   cmd.Flag("password").Value.String(),
+				Queue:      cmd.Flag("queue").Value.String(),
+				Declare:    cmd.Flag("declare").Value.String(),
 			}
 
 			err := c.Consume()
@@ -38,17 +41,46 @@ func main() {
 		},
 	}
 	cmd.AddCommand(&cmdConsumer)
-	cmdConsumer.PersistentFlags().String("e", "", "exchange name")
-	cmdConsumer.PersistentFlags().String("et", "", "exchange type")
-	cmdConsumer.PersistentFlags().String("r", "", "routing key")
-	cmdConsumer.PersistentFlags().String("q", "", "queue")
-	cmdConsumer.PersistentFlags().String("h", "127.0.0.1", "rabbitmq host addr")
-	cmdConsumer.PersistentFlags().String("p", "5672", "rabbitmq port")
-	cmdConsumer.PersistentFlags().String("U", "guest", "rabbitmq user")
-	cmdConsumer.PersistentFlags().String("P", "guest", "rabbitmq password")
+	cmdConsumer.PersistentFlags().String("exchange", "", "exchange name")
+	cmdConsumer.PersistentFlags().String("rk", "", "routing key")
+	cmdConsumer.PersistentFlags().String("queue", "", "queue name")
+	cmdConsumer.PersistentFlags().String("declare", "no", "declare queue")
+	cmdConsumer.PersistentFlags().String("host", "127.0.0.1", "rabbitmq host addr")
+	cmdConsumer.PersistentFlags().String("port", "5672", "rabbitmq port")
+	cmdConsumer.PersistentFlags().String("username", "guest", "rabbitmq user")
+	cmdConsumer.PersistentFlags().String("password", "guest", "rabbitmq password")
 
-	err := cmd.Execute()
-	if err != nil {
+	cmdProducer := cobra.Command{
+		Use:   "producer",
+		Short: "Run rabbitmq producer",
+		Run: func(cmd *cobra.Command, args []string) {
+			p := rmq.Producer{
+				Exchange:     cmd.Flag("exchange").Value.String(),
+				ExchangeType: cmd.Flag("exchange_type").Value.String(),
+				RoutingKey:   cmd.Flag("rk").Value.String(),
+				Host:         cmd.Flag("host").Value.String(),
+				Port:         cmd.Flag("port").Value.String(),
+				Username:     cmd.Flag("username").Value.String(),
+				Password:     cmd.Flag("password").Value.String(),
+			}
+
+			err := p.Produce()
+
+			if err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
+	cmd.AddCommand(&cmdProducer)
+	cmdProducer.PersistentFlags().String("exchange", "", "exchange name")
+	cmdProducer.PersistentFlags().String("exchange_type", "", "exchange type")
+	cmdProducer.PersistentFlags().String("rk", "", "routing key")
+	cmdProducer.PersistentFlags().String("host", "127.0.0.1", "rabbitmq host addr")
+	cmdProducer.PersistentFlags().String("port", "5672", "rabbitmq port")
+	cmdProducer.PersistentFlags().String("username", "guest", "rabbitmq user")
+	cmdProducer.PersistentFlags().String("password", "guest", "rabbitmq password")
+
+	if err := cmd.Execute(); err != nil {
 		log.Fatal(err)
 	}
 
