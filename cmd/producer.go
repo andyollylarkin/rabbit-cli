@@ -11,18 +11,19 @@ import (
 )
 
 type Producer struct {
-	Exchange   string
-	RoutingKey string
-	Host       string
-	Port       string
-	Username   string
-	Password   string
+	Exchange    string
+	RoutingKey  string
+	Host        string
+	Port        string
+	Username    string
+	Password    string
+	Interactive bool
 }
 
 func (p Producer) Produce() error {
 	dsn := "amqp://" + p.Username + ":" + p.Password + "@" + p.Host + ":" + p.Port + "/"
-	conn, err := amqp.Dial(dsn)
 
+	conn, err := amqp.Dial(dsn)
 	if err != nil {
 		return err
 	}
@@ -32,10 +33,10 @@ func (p Producer) Produce() error {
 	fmt.Printf("Connected to %s\n", dsn)
 
 	ch, err := conn.Channel()
-
 	if err != nil {
 		return err
 	}
+
 	defer ch.Close()
 
 	cl := make(chan *amqp.Error)
@@ -54,10 +55,14 @@ func (p Producer) Produce() error {
 		msg := amqp.Publishing{
 			Body: []byte(text),
 		}
-		err := ch.Publish(p.Exchange, p.RoutingKey, false, false, msg)
 
+		err := ch.Publish(p.Exchange, p.RoutingKey, false, false, msg)
 		if err != nil {
 			log.Fatal(err)
+		}
+
+		if !p.Interactive {
+			return nil
 		}
 	}
 }

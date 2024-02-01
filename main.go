@@ -18,19 +18,21 @@ func main() {
 		Run:     func(cmd *cobra.Command, args []string) { fmt.Println(cmd.Example); os.Exit(1) },
 		Version: version,
 	}
+	var interactive bool
 	cmdConsumer := cobra.Command{
 		Use:   "consumer",
 		Short: "Run rabbitmq consumer",
 		Run: func(cmd *cobra.Command, args []string) {
 			c := rmq.Consumer{
-				Exchange:   cmd.Flag("exchange").Value.String(),
-				RoutingKey: cmd.Flag("rk").Value.String(),
-				Host:       cmd.Flag("host").Value.String(),
-				Port:       cmd.Flag("port").Value.String(),
-				Username:   cmd.Flag("username").Value.String(),
-				Password:   cmd.Flag("password").Value.String(),
-				Queue:      cmd.Flag("queue").Value.String(),
-				Declare:    cmd.Flag("declare").Value.String(),
+				Exchange:    cmd.Flag("exchange").Value.String(),
+				RoutingKey:  cmd.Flag("rk").Value.String(),
+				Host:        cmd.Flag("host").Value.String(),
+				Port:        cmd.Flag("port").Value.String(),
+				Username:    cmd.Flag("username").Value.String(),
+				Password:    cmd.Flag("password").Value.String(),
+				Queue:       cmd.Flag("queue").Value.String(),
+				Declare:     cmd.Flag("declare").Value.String(),
+				Interactive: interactive,
 			}
 
 			err := c.Consume()
@@ -49,18 +51,20 @@ func main() {
 	cmdConsumer.PersistentFlags().String("port", "5672", "rabbitmq port")
 	cmdConsumer.PersistentFlags().String("username", "guest", "rabbitmq user")
 	cmdConsumer.PersistentFlags().String("password", "guest", "rabbitmq password")
+	cmdConsumer.PersistentFlags().BoolVarP(&interactive, "interactive", "i", false, "interactive mode")
 
 	cmdProducer := cobra.Command{
 		Use:   "producer",
 		Short: "Run rabbitmq producer",
 		Run: func(cmd *cobra.Command, args []string) {
 			p := rmq.Producer{
-				Exchange:   cmd.Flag("exchange").Value.String(),
-				RoutingKey: cmd.Flag("rk").Value.String(),
-				Host:       cmd.Flag("host").Value.String(),
-				Port:       cmd.Flag("port").Value.String(),
-				Username:   cmd.Flag("username").Value.String(),
-				Password:   cmd.Flag("password").Value.String(),
+				Exchange:    cmd.Flag("exchange").Value.String(),
+				RoutingKey:  cmd.Flag("rk").Value.String(),
+				Host:        cmd.Flag("host").Value.String(),
+				Port:        cmd.Flag("port").Value.String(),
+				Username:    cmd.Flag("username").Value.String(),
+				Password:    cmd.Flag("password").Value.String(),
+				Interactive: interactive,
 			}
 
 			err := p.Produce()
@@ -77,6 +81,7 @@ func main() {
 	cmdProducer.PersistentFlags().String("port", "5672", "rabbitmq port")
 	cmdProducer.PersistentFlags().String("username", "guest", "rabbitmq user")
 	cmdProducer.PersistentFlags().String("password", "guest", "rabbitmq password")
+	cmdProducer.PersistentFlags().BoolVarP(&interactive, "interactive", "i", false, "interactive mode")
 
 	if err := cmd.Execute(); err != nil {
 		log.Fatal(err)
